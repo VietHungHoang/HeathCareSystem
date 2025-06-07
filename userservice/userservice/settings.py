@@ -25,6 +25,9 @@ INSTALLED_APPS = [
 
     # My apps
     'users_app',
+    
+    # Swagger
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
