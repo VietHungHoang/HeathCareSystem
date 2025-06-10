@@ -27,45 +27,45 @@ class AppointmentListCreateView(generics.ListCreateAPIView):
         doctor_id = serializer.validated_data['doctor_id']
         appointment_time = serializer.validated_data['appointment_time']
 
-        # --- Bước 1: Gọi DoctorService để kiểm tra lịch làm việc ---
-        doctor_service_url = os.getenv('DOCTOR_SERVICE_URL')
-        if not doctor_service_url:
-            return Response(
-                {"error": "Doctor service URL is not configured."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        # # --- Bước 1: Gọi DoctorService để kiểm tra lịch làm việc ---
+        # doctor_service_url = os.getenv('DOCTOR_SERVICE_URL')
+        # if not doctor_service_url:
+        #     return Response(
+        #         {"error": "Doctor service URL is not configured."},
+        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        #     )
         
-        availability_url = f"{doctor_service_url}/{doctor_id}/availability/"
-        params = {'datetime': appointment_time.isoformat()}
+        # availability_url = f"{doctor_service_url}/{doctor_id}/availability/"
+        # params = {'datetime': appointment_time.isoformat()}
         
-        try:
-            response = requests.get(availability_url, params=params)
-            response.raise_for_status() # Ném lỗi nếu status code là 4xx hoặc 5xx
+        # try:
+        #     response = requests.get(availability_url, params=params)
+        #     response.raise_for_status() # Ném lỗi nếu status code là 4xx hoặc 5xx
             
-            availability_data = response.json()
-            if not availability_data.get('is_available'):
-                return Response(
-                    {"error": "Bác sĩ không có lịch làm việc vào thời gian này."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        except requests.exceptions.RequestException as e:
-            return Response(
-                {"error": f"Không thể kết nối đến DoctorService: {e}"},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE
-            )
+        #     availability_data = response.json()
+        #     if not availability_data.get('is_available'):
+        #         return Response(
+        #             {"error": "Bác sĩ không có lịch làm việc vào thời gian này."},
+        #             status=status.HTTP_400_BAD_REQUEST
+        #         )
+        # except requests.exceptions.RequestException as e:
+        #     return Response(
+        #         {"error": f"Không thể kết nối đến DoctorService: {e}"},
+        #         status=status.HTTP_503_SERVICE_UNAVAILABLE
+        #     )
 
-        # --- Bước 2: Kiểm tra xung đột lịch hẹn trong chính service này ---
-        is_slot_taken = Appointment.objects.filter(
-            doctor_id=doctor_id,
-            appointment_time=appointment_time,
-            status='SCHEDULED'
-        ).exists()
+        # # --- Bước 2: Kiểm tra xung đột lịch hẹn trong chính service này ---
+        # is_slot_taken = Appointment.objects.filter(
+        #     doctor_id=doctor_id,
+        #     appointment_time=appointment_time,
+        #     status='SCHEDULED'
+        # ).exists()
 
-        if is_slot_taken:
-            return Response(
-                {"error": "Khung giờ này đã có người khác đặt."},
-                status=status.HTTP_409_CONFLICT
-            )
+        # if is_slot_taken:
+        #     return Response(
+        #         {"error": "Khung giờ này đã có người khác đặt."},
+        #         status=status.HTTP_409_CONFLICT
+        #     )
             
         # --- Bước 3: Nếu mọi thứ ổn, tạo lịch hẹn ---
         self.perform_create(serializer)
@@ -80,3 +80,18 @@ class AppointmentDetailView(generics.RetrieveUpdateAPIView):
         if self.request.method in ['PUT', 'PATCH']:
             return AppointmentUpdateSerializer
         return AppointmentSerializer
+
+class AppointmentCancelView(generics.DestroyAPIView):
+    queryset = Appointment.objects.all()
+    lookup_field = 'id'
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.status != 'SCHEDULED':
+            return Response(
+                {"error": "Chỉ có thể hủy lịch hẹn đang được lên lịch."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        instance.status = 'CANCELED'
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)

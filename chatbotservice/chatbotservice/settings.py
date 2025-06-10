@@ -12,8 +12,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-CORS_ALLOW_ALL_ORIGINS = True  # Cho phép tất cả các nguồn gốc
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -22,9 +20,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'doctors_app',
-    'drf_yasg',
-    'corsheaders',
+    'chatbots_app',
+    # 'drf_yasg',  # For API documentation
 ]
 
 MIDDLEWARE = [
@@ -35,10 +32,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # CORS middleware
 ]
 
-ROOT_URLCONF = 'doctorservice.urls'
+ROOT_URLCONF = 'chatbotservice.urls'
 
 TEMPLATES = [
     {
@@ -56,7 +52,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'doctorservice.wsgi.application'
+WSGI_APPLICATION = 'chatbotservice.wsgi.application'
 
 DATABASES = {
     'default': {
@@ -64,10 +60,10 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
         'OPTIONS': {
-            'options': f"-c search_path=doctors,public"
+            'options': f"-c search_path=chatbots,public"
         }
     }
 }

@@ -10,7 +10,10 @@ SECRET_KEY = 'django-insecure-key-placeholder' # Sẽ thay thế sau
 
 DEBUG = True
 
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # Cho phép tất cả các nguồn gốc
 ALLOWED_HOSTS = []
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -28,6 +31,8 @@ INSTALLED_APPS = [
     
     # Swagger
     'drf_yasg',
+    
+    'corsheaders',  # For handling CORS
 ]
 
 MIDDLEWARE = [
@@ -38,6 +43,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # CORS middleware
 ]
 
 ROOT_URLCONF = 'userservice.urls'

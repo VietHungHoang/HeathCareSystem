@@ -1,2 +1,6 @@
 userservice/venv
 patientservice/venv
+doctorservice/venv
+appointmentservice/venv
+chatbotservice/venv
+chatbot
